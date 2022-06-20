@@ -8,10 +8,10 @@ var app = express();
 // DB setting
 mongoose.connect(process.env.MONGO_DB);
 var db = mongoose.connection;
-db.once('open', function(){
+db.once('open', () => {
   console.log('DB connected');
 });
-db.on('error', function(err){
+db.on('error', (err) => {
   console.log('DB ERROR : ', err);
 });
 
@@ -28,6 +28,6 @@ app.use('/posts', require('./routes/posts'));
 
 // Port setting
 var port = 3000;
-app.listen(port, function(){
+app.listen(port, () => {
   console.log('server on! http://localhost:'+port);
 });
