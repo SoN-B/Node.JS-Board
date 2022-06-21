@@ -24,7 +24,7 @@ router.get('/new', (req, res) => {
 
 // create
 router.post('/', (req, res) => {
-    Post.create(req.body, (err, post) => {
+    Post.create(req.body, (err) => {
         if(err) return res.json(err);
         res.redirect('/posts');
     });
