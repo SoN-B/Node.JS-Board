@@ -15,6 +15,7 @@ var userSchema = mongoose.Schema({
     email:{type:String}
 },{
     toObject:{virtuals:true}
+    // virtuals:true는 virtual로 설정된 항목들을 toObject함수에서 표시하게 하는 설정
 });
 /*DB에 저장되는 값 이외의 항목이 필요할 땐 virtual 항목으로 만듭니다. 
 즉 passwordConfirmation, originalPassword, currentPassword, newPassword는 
@@ -23,21 +24,21 @@ var userSchema = mongoose.Schema({
 */
 
 // virtuals
-userSchema.virtual('passwordConfirmation')
-    .get(function(){ return this._passwordConfirmation; })
-    .set(function(value){ this._passwordConfirmation=value; });
-
-userSchema.virtual('originalPassword')
+userSchema.virtual('originalPassword') // 그 전 비밀번호
     .get(function(){ return this._originalPassword; })
     .set(function(value){ this._originalPassword=value; });
 
-userSchema.virtual('currentPassword')
+userSchema.virtual('currentPassword') // 지금 비밀번호
     .get(function(){ return this._currentPassword; })
     .set(function(value){ this._currentPassword=value; });
 
-userSchema.virtual('newPassword')
+userSchema.virtual('newPassword') // 새로운 비밀번호
     .get(function(){ return this._newPassword; })
     .set(function(value){ this._newPassword=value; });
+
+userSchema.virtual('passwordConfirmation') // 재확인 입력
+    .get(function(){ return this._passwordConfirmation; })
+    .set(function(value){ this._passwordConfirmation=value; });
 
 // password validation
 // password를 DB에 생성, 수정하기 전에 값이 유효(valid)한지 확인(validate)을 하는 코드
