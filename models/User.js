@@ -1,6 +1,7 @@
 // models/User.js
 
 var mongoose = require('mongoose');
+var bcrypt = require('bcryptjs');
 
 // schema
 var userSchema = mongoose.Schema({
@@ -62,7 +63,7 @@ if(!user.isNew){
     if(!user.currentPassword){
         user.invalidate('currentPassword', 'Current Password is required!');
     }
-    else if(user.currentPassword != user.originalPassword){
+    else if(!bcrypt.compareSync(user.currentPassword, user.originalPassword)){ // 입력받은 password의 hash와 저장된 hash가 일치하는지 확인
         user.invalidate('currentPassword', 'Current Password is invalid!');
     }
 
@@ -71,6 +72,29 @@ if(!user.isNew){
     }
 }
 });
+
+// hash password
+userSchema.pre('save', function (next){
+    var user = this;
+
+    if(!user.isModified('password')){ // user 생성시는 항상 true이며, user 수정시는 password가 변경되는 경우에만 true를 반환
+        // isModified함수는 해당 값이 db에 기록된 값과 비교해서 변경된 경우 true를, 그렇지 않은 경우 false를 반환하는 함수
+        return next();
+    }
+    else { // password 변경 O
+        user.password = bcrypt.hashSync(user.password);
+        return next();
+    }
+});
+// 첫번째 파라미터로 설정된 event(save)가 일어나기 전(pre)에 먼저 callback 함수를 실행
+// "save" event -> Model.create, model.save (즉 user를 생성하거나 user를 수정한 뒤 save 함수를 실행 할 때 -> callback 함수가 먼저 호출)
+
+// model methods
+userSchema.methods.authenticate = function (password) {
+    var user = this;
+    return bcrypt.compareSync(password,user.password);
+};
+// user model의 password hash와 입력받은 password text를 비교하는 method를 추가
 
 // model & export
 var User = mongoose.model('user',userSchema);
