@@ -14,16 +14,28 @@ router.get('/', function(req, res){
 
 // New
 router.get('/new', function(req, res){
-    res.render('users/new');
+    var user = req.flash('user')[0] || {}; // create route에서 생성된 flash값
+    // req.falsh의 값이 없다면(처음 new page에 들어온 경우), {} 빈 오브젝트 반환
+    var errors = req.flash('errors')[0] || {};
+    res.render('users/new', { user:user, errors:errors});
 });
+//에러가 있는 경우 new페이지에 에러 AND 기존에 입력했던 값들을 보여줌
 
 // create
 router.post('/', function(req, res){
     User.create(req.body, function(err){
-        if(err) return res.json(err);
+        if(err) {
+            req.flash('user', req.body);
+            req.flash('errors', parseError(err));
+            // parseError -> err을 분석하고 일정한 형식으로 만듬
+            return res.redirect('/users/new');
+        } 
         res.redirect('/users');
     });
 });
+// user 생성시 발생할 수 있는 오류 2가지
+// 1. 첫번째는 User model의 userSchema에 설정해둔 validation을 통과하지 못한 경우
+// 2. mongoDB에서 오류를 내는 경우
 
 // show
 router.get('/:username', function(req, res){
@@ -81,3 +93,26 @@ router.delete('/:username', function(req, res){
 });
 
 module.exports = router;
+
+// functions
+function parseError(errors){
+    var parsed = {};
+
+    if(errors.name == 'ValidationError'){
+    // mongoose의 model validation error 처리
+        for(var name in errors.errors){
+        var validationError = errors.errors[name];
+        parsed[name] = { message:validationError.message };
+        }
+    }
+    else if(errors.code == '11000' && errors.errmsg.indexOf('username') > 0) {
+    // mongoDB에서 username이 중복되는 error 처리
+        parsed.username = { message:'This username already exists!' };
+    }
+    else {
+    // 그 외 error들을 처리
+        parsed.unhandled = JSON.stringify(errors);
+    }
+    
+    return parsed;
+}
