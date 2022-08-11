@@ -20,6 +20,7 @@ user1과 user2가 웹사이트를 보고 있는 경우 해당 user들을 구분�
 flash에 저장되는 값 역시 user1이 생성한 flash는 user1에게, 
 user2가 생성한 flash는 user2에게 보여져야 하기 때문에 session이 필요합니다.
 */
+var passport = require('./config/passport');
 var app = express();
 
 // DB setting
@@ -44,6 +45,17 @@ app.use(session({secret:'MySecret', resave:true, saveUninitialized:true}));
 secret은session을 hash화하는데 사용되는 값으로 비밀번호 정도로 생각하면 됩니다. 
 아무값이나 넣어주고 해커가 알 수 없게 합시다.
 */
+// Passport setting
+app.use(passport.initialize()); // 초기화
+app.use(passport.session()) // passport와 session연결r
+
+app.use(function(req,res,next){ // app.use에 함수를 넣은 것을 middleware라고 합니다.
+  res.locals.isAuthenticated = req.isAuthenticated(); // (ejs에서 user가 로그인이 되어 있는지 아닌지를 확인)
+  // 현재 로그인이 되어있는지 아닌지를true,false
+  res.locals.currentUser = req.user; // (로그인된 user의 정보)
+  // 로그인이 되면 session으로 부터 user를 deserialize하여 생성
+  next();
+});
 
 // Routes
 app.use('/', require('./routes/home'));
