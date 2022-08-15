@@ -47,7 +47,8 @@ var userSchema = mongoose.Schema({
     toObject:{virtuals:true}
     // virtuals:true는 virtual로 설정된 항목들을 toObject함수에서 표시하게 하는 설정
 });
-/*DB에 저장되는 값 이외의 항목이 필요할 땐 virtual 항목으로 만듭니다. 
+/*
+DB에 저장되는 값 이외의 항목이 필요할 땐 virtual 항목으로 만듭니다. 
 즉 passwordConfirmation, originalPassword, currentPassword, newPassword는 
 회원가입, 회원정보 수정을 위해 필요한 항목이지만, DB에 저장할 필요는 없는 값들입니다. 
 이처럼 DB에 저장될 필요는 없지만, model에서 사용하고 싶은 항목들은 virtual로 만듭니다.

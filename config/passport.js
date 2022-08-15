@@ -35,7 +35,7 @@ user정보를 전부 session에 저장하여 db접촉을 줄이거나,
 */
 
 // local strategy
-    passport.use('local-login',
+passport.use('local-login',
     new LocalStrategy({
         usernameField : 'username',
         passwordField : 'password',
