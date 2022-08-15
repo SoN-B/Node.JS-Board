@@ -19,6 +19,7 @@
                     <div class="col-sm-9">
                         <input type="text" id="username" name="username" value="<%= username %>"
                             class="form-control <%= (errors.username)?'is-invalid':'' %>">
+                        <!-- is-invalid: 에러가 있다면 bootstrap의 invalid-feedback class를 사용 -->
                         <% if(errors.username){ %>
                             <span class="invalid-feedback">
                                 <%= errors.username %>

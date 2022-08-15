@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var User = require('../models/User');
+var util = require('../util');
 
 // Index
 router.get('/', function(req, res){
@@ -26,7 +27,7 @@ router.post('/', function(req, res){
     User.create(req.body, function(err){
         if(err) {
             req.flash('user', req.body);
-            req.flash('errors', parseError(err));
+            req.flash('errors', util.parseError(err));
             // parseError -> err을 분석하고 일정한 형식으로 만듬
             return res.redirect('/users/new');
         } 
@@ -47,11 +48,27 @@ router.get('/:username', function(req, res){
 
 // edit
 router.get('/:username/edit', function(req, res){
-    User.findOne({username:req.params.username}, function(err, user){
-        if(err) return res.json(err);
-        res.render('users/edit', {user:user});
+    var user = req.flash('user')[0];
+    var errors = req.flash('errors')[0] || {};
+    if(!user){ // edit에 처음 접속하는경우
+        User.findOne({username:req.params.username}, function(err, user){
+            if(err) return res.json(err);
+            res.render('users/edit', { username:req.params.username, user:user, errors:errors });
     });
+    }
+    else { // edit의 update후 에러가 있을시
+        res.render('users/edit', { username:req.params.username, user:user, errors:errors });
+    }
+    /*
+    이제부터 render시에 username을 따로 보내주는데, 이전에는 user.username이 항상 
+    해당 user의 username이였지만 이젠 user flash에서 값을 받는 경우 username이 
+    달라 질 수도 있기 때문에 주소에서 찾은 username을 따로 보내주게됩니다.
+    */
 });
+/*
+edit은 처음 접속하는 경우에는 DB에서 값을 찾아 form에 기본값을 생성하고, 
+update에서 오류가 발생해 돌아오는 경우에는 기존에 입력했던 값으로 form에 값들을 생성
+*/
 
 // update
 router.put('/:username', function(req, res, next){
@@ -70,7 +87,11 @@ router.put('/:username', function(req, res, next){
 
         // save updated user
         user.save(function(err, user){
-            if(err) return res.json(err);
+            if(err) {
+                req.flash('user', req.body);
+                req.flash('errors', util.parseError(err));
+                return res.redirect('/users/'+req.params.username+'/edit'); 
+            }
             res.redirect('/users/'+user.username);
         });
     });
