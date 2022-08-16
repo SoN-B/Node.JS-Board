@@ -7,7 +7,8 @@ var util = require('../util');
 
 // Index 
 router.get('/', (req, res) => {
-    Post.find({})                 
+    Post.find({})            
+    .populate('author')     
     .sort('-createdAt')
     // 나중에 생성된 data가 위로 오도록 정렬
     // '-' -> 내림차순, createdAt -> 정렬할 항목명
@@ -18,15 +19,17 @@ router.get('/', (req, res) => {
     });
 });
 
-// New
+// New *
 router.get('/new', (req, res) => {
     var post = req.flash('post')[0] || {};
     var errors = req.flash('errors')[0] || {};
     res.render('posts/new', { post:post, errors:errors });
 });
 
-// create
+// create *
 router.post('/', (req, res) => {
+    req.body.author = req.user._id;
+    // req.user는 로그인을 하면 passport에서 자동으로 생성
     Post.create(req.body, (err) => {
         if(err){
             req.flash('post', req.body);
@@ -39,13 +42,31 @@ router.post('/', (req, res) => {
 
 // show
 router.get('/:id', (req, res) => {
-    Post.findOne({_id:req.params.id}, (err, post) => {
+    Post.findOne({_id:req.params.id})
+    .populate('author')
+    .exec(function(err, post){
         if(err) return res.json(err);
         res.render('posts/show', {post:post});
     });
 });
+// Model.populate() : relationship이 형성되어 있는 항목의 값을 생성해 줍니다. 
+// 현재 post의 author에는 user의 id가 기록되어 있는데, 이 값을 바탕으로 실제 user의 값을 author에 생성
+/*
+Data 예시
+{ 
+    _id: {$oid :5a23c1b5d52a003c98e13f1c},
+    name: 'CharmSae',
+    age: 16, 
+    stories : {
+        author : {$oid :5a23c1b5d52a003c98e13f1d},
+        title : 'HueMoneLabStory'
+        fans : {$oid :5a23c1b5d52a003c98e13f1d},
+    },
+}
+*/
 
-// edit
+
+// edit **
 router.get('/:id/edit', (req, res) => {
     var post = req.flash('post')[0];
     var errors = req.flash('errors')[0] || {};
@@ -61,7 +82,7 @@ router.get('/:id/edit', (req, res) => {
     }
 });
 
-// update
+// update **
 router.put('/:id', (req, res) => {
     req.body.updatedAt = Date.now();
     Post.findOneAndUpdate({_id:req.params.id}, req.body, {runValidators:true}, function(err, post){
