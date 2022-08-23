@@ -3,16 +3,6 @@ var router = express.Router();
 var User = require('../models/User');
 var util = require('../util');
 
-// Index
-router.get('/', function(req, res){
-    User.find({}) 
-    .sort({username:1}) // username을 기준으로 오름차순(asc)으로 정렬
-    .exec(function(err, users){
-        if(err) return res.json(err);
-        res.render('users/index', {users:users});
-    });
-});
-
 // New
 router.get('/new', function(req, res){
     var user = req.flash('user')[0] || {}; // create route에서 생성된 flash값
@@ -31,7 +21,7 @@ router.post('/', function(req, res){
             // parseError -> err을 분석하고 일정한 형식으로 만듬
             return res.redirect('/users/new');
         } 
-        res.redirect('/users');
+        res.redirect('/login');
     });
 });
 // user 생성시 발생할 수 있는 오류 2가지
@@ -39,7 +29,7 @@ router.post('/', function(req, res){
 // 2. mongoDB에서 오류를 내는 경우
 
 // show
-router.get('/:username', function(req, res){
+router.get('/:username', util.isLoggedin, checkPermission, function(req, res){
     User.findOne({username:req.params.username}, function(err, user){
         if(err) return res.json(err);
         res.render('users/show', {user:user});
@@ -47,7 +37,7 @@ router.get('/:username', function(req, res){
 });
 
 // edit
-router.get('/:username/edit', function(req, res){
+router.get('/:username/edit', util.isLoggedin, checkPermission, function(req, res){
     var user = req.flash('user')[0];
     var errors = req.flash('errors')[0] || {};
     if(!user){ // edit에 처음 접속하는경우
@@ -71,7 +61,7 @@ update에서 오류가 발생해 돌아오는 경우에는 기존에 입력했�
 */
 
 // update
-router.put('/:username', function(req, res, next){
+router.put('/:username', util.isLoggedin, checkPermission, function(req, res, next){
     User.findOne({username:req.params.username})
         .select('password')
         .exec(function(err, user){
@@ -105,14 +95,6 @@ password를 읽어오지 않게 되는데, select('password')를 통해서 passw
 ex) password를 읽어오고, name을 안 읽어오게 하고 싶다면 .select('password -name')를 입력
 */
 
-// destroy
-router.delete('/:username', function(req, res){
-    User.deleteOne({username:req.params.username}, function(err){
-        if(err) return res.json(err);
-        res.redirect('/users');
-    });
-});
-
 module.exports = router;
 
 // functions
@@ -137,3 +119,18 @@ function parseError(errors){
     
     return parsed;
 }
+
+/**
+ * 해당 user의 id와 로그인된 user.id를 비교해서 같은 경우에만 계속 진행(next())하고, 
+ * 만약 다르다면 util.noPermission함수를 호출하여 login 화면으로 돌려보냅니다.
+ */
+function checkPermission(req, res, next){
+    User.findOne({username:req.params.username}, (err, user) => {
+        if(err) return res.json(err);
+        if(user.id != req.user.id) return util.noPermission(req, res);
+    
+        next();
+    });
+}
+
+// show, edit, update에util.isLoggedin과 checkPermission를 사용해서 로그인이 되고 자신의 데이터에 접근하는 경우에만 해당 route을 사용할 수 있습니다.

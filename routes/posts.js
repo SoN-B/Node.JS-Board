@@ -20,14 +20,14 @@ router.get('/', (req, res) => {
 });
 
 // New *
-router.get('/new', (req, res) => {
+router.get('/new', util.isLoggedin, (req, res) => {
     var post = req.flash('post')[0] || {};
     var errors = req.flash('errors')[0] || {};
     res.render('posts/new', { post:post, errors:errors });
 });
 
 // create *
-router.post('/', (req, res) => {
+router.post('/', util.isLoggedin, (req, res) => {
     req.body.author = req.user._id;
     // req.user는 로그인을 하면 passport에서 자동으로 생성
     Post.create(req.body, (err) => {
@@ -65,9 +65,8 @@ Data 예시
 }
 */
 
-
 // edit **
-router.get('/:id/edit', (req, res) => {
+router.get('/:id/edit', util.isLoggedin, checkPermission, (req, res) => {
     var post = req.flash('post')[0];
     var errors = req.flash('errors')[0] || {};
     if(!post){ // post X
@@ -83,7 +82,7 @@ router.get('/:id/edit', (req, res) => {
 });
 
 // update **
-router.put('/:id', (req, res) => {
+router.put('/:id', util.isLoggedin, checkPermission, (req, res) => {
     req.body.updatedAt = Date.now();
     Post.findOneAndUpdate({_id:req.params.id}, req.body, {runValidators:true}, function(err, post){
         if(err){
@@ -98,11 +97,24 @@ router.put('/:id', (req, res) => {
 //이 option을 통해서 validation이 작동하도록 설정해 주어야 합니다.
 
 // destroy
-router.delete('/:id', (req, res) => {
+router.delete('/:id', util.isLoggedin, checkPermission, (req, res) => {
     Post.deleteOne({_id:req.params.id}, (err) => {
         if(err) return res.json(err);
         res.redirect('/posts');
     });
 });
+
+/**
+ * 해당 게시물에 기록된 author와 로그인된 user.id를 비교해서 같은 경우에만 계속 진행(next())하고, 
+ * 만약 다르다면 util.noPermission함수를 호출하여 login 화면으로 돌려보냅니다.
+ */
+function checkPermission(req, res, next) {
+    Post.findOne({_id:req.params.id}, (err, post) => {
+        if(err) return res.json(err);
+        if(post.author != req.user.id) return util.noPermission(req, res);
+    
+        next();
+    });
+}
 
 module.exports = router;
