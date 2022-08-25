@@ -6,16 +6,32 @@ var Post = require('../models/Post');
 var util = require('../util');
 
 // Index 
-router.get('/', (req, res) => {
-    Post.find({})            
-    .populate('author')     
-    .sort('-createdAt')
-    // 나중에 생성된 data가 위로 오도록 정렬
-    // '-' -> 내림차순, createdAt -> 정렬할 항목명
-    // object를 넣는 경우 {createdAt:1} or {createdAt:-1}
-    .exec((err, posts) => {   
-        if(err) return res.json(err);
-        res.render('posts/index', {posts:posts});
+router.get('/', async (req, res) => {
+    var page = Math.max(1, parseInt(req.query.page));
+    var limit = Math.max(1, parseInt(req.query.limit)); 
+    page = !isNaN(page) ? page : 1;
+    limit = !isNaN(limit) ? limit : 10;
+    // isNaN() - 매개변수가 숫자인지 검사하는 함수 (숫자가 아니면 true)
+    // NaN = Not a Number 
+
+    var skip = (page-1)*limit;
+    var count = await Post.countDocuments({}); // {} -> 조건없음
+    var maxPage = Math.ceil(count/limit);
+    var posts = await Post.find({})
+        .populate('author')
+        .sort('-createdAt')
+        // 나중에 생성된 data가 위로 오도록 정렬
+        // '-' -> 내림차순, createdAt -> 정렬할 항목명
+        // object를 넣는 경우 {createdAt:1} or {createdAt:-1}
+        .skip(skip)
+        .limit(limit)
+        .exec();
+    
+    res.render('posts/index', {
+        posts:posts,
+        currentPage:page,
+        maxPage:maxPage,
+        limit:limit
     });
 });
 
