@@ -21,7 +21,7 @@
                 </ol>
             </nav>
 
-            <form action="/posts/<%= post._id %>?_method=put" method="post">
+            <form action="/posts/<%= post._id %>?_method=put<%= getPostQueryString(true) %>" method="post">
                 <div class="form-group">
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" value="<%= post.title %>"
@@ -51,7 +51,7 @@
                     <% } %>
 
                         <div>
-                            <a class="btn btn-primary" href="/posts">Back</a>
+                            <a class="btn btn-primary" href="/posts<%= getPostQueryString() %>">Back</a>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
             </form>

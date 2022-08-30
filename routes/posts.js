@@ -50,11 +50,13 @@ router.post('/', util.isLoggedin, (req, res) => {
         if(err){
             req.flash('post', req.body);
             req.flash('errors', util.parseError(err));
-            return res.redirect('/posts/new');
+            return res.redirect('/posts/new'+res.locals.getPostQueryString());
         }
-        res.redirect('/posts');
+        res.redirect('/posts'+res.locals.getPostQueryString(false, {page:1}));
     });
 });
+// post의 routes에서 redirect가 있는 경우 
+// res.locals.getPostQueryString함수를 사용하여 query string을 계속 유지
 
 // show
 router.get('/:id', (req, res) => {
@@ -104,9 +106,9 @@ router.put('/:id', util.isLoggedin, checkPermission, (req, res) => {
         if(err){
             req.flash('post', req.body);
             req.flash('errors', util.parseError(err));
-            return res.redirect('/posts/'+req.params.id+'/edit');
+            return res.redirect('/posts/'+req.params.id+'/edit'+res.locals.getPostQueryString());
         }
-        res.redirect('/posts/'+req.params.id);
+        res.redirect('/posts/'+req.params.id+res.locals.getPostQueryString());
     });
 });
 //runValidators: findOneAndUpdate는 기본설정이 schema에 있는 validation을 작동하지 않도록 되어 있기때문에 
@@ -116,7 +118,7 @@ router.put('/:id', util.isLoggedin, checkPermission, (req, res) => {
 router.delete('/:id', util.isLoggedin, checkPermission, (req, res) => {
     Post.deleteOne({_id:req.params.id}, (err) => {
         if(err) return res.json(err);
-        res.redirect('/posts');
+        res.redirect('/posts'+res.locals.getPostQueryString());
     });
 });
 

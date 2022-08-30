@@ -17,7 +17,7 @@
                     <li class="breadcrumb-item active" aria-current="page">New Post</li>
                 </ol>
             </nav>
-            <form action="/posts" method="post">
+            <form action="/posts<%= getPostQueryString() %>" method="post">
                 <div class="form-group">
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" value="<%= post.title %>"
@@ -47,7 +47,7 @@
                     <% } %>
 
                         <div>
-                            <a class="btn btn-primary" href="/posts">Back</a>
+                            <a class="btn btn-primary" href="/posts<%= getPostQueryString() %>">Back</a>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
             </form>

@@ -21,6 +21,7 @@ flash에 저장되는 값 역시 user1이 생성한 flash는 user1에게,
 user2가 생성한 flash는 user2에게 보여져야 하기 때문에 session이 필요합니다.
 */
 var passport = require('./config/passport');
+var util = require('./util');
 var app = express();
 
 // DB setting
@@ -61,7 +62,9 @@ app.use(function(req,res,next){ // app.use에 함수를 넣은 것을 middleware
 
 // Routes
 app.use('/', require('./routes/home'));
-app.use('/posts', require('./routes/posts'));
+app.use('/posts', util.getPostQueryString, require('./routes/posts'));
+// util.getPostQueryString미들웨어를 posts route이 request되기 전에 배치하여 
+// 모든 post routes에서 res.locals.getPostQueryString를 사용할 수 있게 하였습니다.
 app.use('/users', require('./routes/users'));
 
 // Port setting

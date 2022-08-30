@@ -26,7 +26,7 @@
                             <% posts.forEach(function(post) { %>
                                 <tr>
                                     <td>
-                                        <a href="/posts/<%= post._id %>">
+                                        <a href="/posts/<%= post._id %><%= getPostQueryString() %>">
                                             <div class="ellipsis">
                                                 <%= post.title %>
                                             </div>
@@ -50,7 +50,7 @@
 
                 <div class="col-2">
                     <% if(isAuthenticated){ %>
-                        <a class="btn btn-primary" href="/posts/new">New</a>
+                        <a class="btn btn-primary" href="/posts/new<%= getPostQueryString() %>">New</a>
                         <% } %>
                 </div>
 
@@ -59,14 +59,16 @@
                         var nextBtnEnabled = currentPage < maxPage; %>
                             <ul class="pagination pagination-sm justify-content-center align-items-center h-100 mb-0">
                                 <li class="page-item <%= previousBtnEnabled?'':'disabled' %>">
-                                    <a class="page-link" href="/posts?page=<%= currentPage-1 %>&limit=<%= limit %>"
+                                    <a class="page-link"
+                                        href="/posts<%= getPostQueryString(false, {page:currentPage-1}) %>"
                                         <%=previousBtnEnabled?'':'tabindex=-1' %>>«
                                     </a>
                                 </li>
                                 <% for(i=1;i<=maxPage;i++){ %>
                                     <% if(i==1 || i==maxPage || (i>=currentPage-offset && i<=currentPage+offset)){ %>
                                             <li class="page-item <%= currentPage==i?'active':'' %>">
-                                                <a class="page-link" href="/posts?page=<%= i %>&limit=<%= limit %>">
+                                                <a class="page-link"
+                                                    href="/posts<%= getPostQueryString(false, {page:i}) %>">
                                                     <%= i %>
                                                 </a>
                                             </li>
@@ -78,10 +80,11 @@
                                                     <% } %>
                                                         <li class="page-item <%= nextBtnEnabled?'':'disabled' %>">
                                                             <a class="page-link"
-                                                                href="/posts?page=<%= currentPage+1 %>&limit=<%= limit %>"
+                                                                href="/posts<%= getPostQueryString(false, {page:currentPage+1}) %>"
                                                                 <%=nextBtnEnabled?'':'tabindex=-1' %>>»
                                                             </a>
                                                         </li>
+                                                        <!-- view에서는 res.locals의 항목들을 바로 사용할 수 있기때문에 res.locals.getPostQueryString가 아니라 getPostQueryString로 호출합니다. -->
                             </ul>
                 </nav>
             </div>
