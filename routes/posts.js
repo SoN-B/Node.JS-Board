@@ -94,7 +94,7 @@ router.get("/:id/edit", util.isLoggedin, checkPermission, (req, res) => {
             res.render("posts/edit", { post: post, errors: errors });
         });
     } else {
-        // post O (update시 오류가 있을경우)
+        // post O (update후, 오류가 있을경우)
         post._id = req.params.id;
         res.render("posts/edit", { post: post, errors: errors });
     }
