@@ -10,6 +10,8 @@
         <div class="container mb-3">
             <h2 class="mb-3">Board</h2>
             <table class="board-table table table-sm border-bottom">
+                <!-- <tr> 태그는 표의 행-가로(row) -->
+                <!-- <td> 태그는 표의 열-세로(col)을 나타내며, <tr> 태그 하위에 위치합니다. -->
                 <thead class="thead-light">
                     <tr>
                         <th scope="col">Title</th>
@@ -19,73 +21,67 @@
                 </thead>
                 <tbody>
                     <% if(posts==null || posts.length==0){ %>
-                        <tr>
+                        <tr> 
                             <td colspan=2> There is no data to show :( </td>
+                            <!-- colspan 속성은 해당 데이터 셀(data cell)이 확장될 열(column)의 개수를 명시 -->
                         </tr>
-                        <% } %>
-                            <% posts.forEach(function(post) { %>
-                                <tr>
-                                    <td>
-                                        <a href="/posts/<%= post._id %><%= getPostQueryString() %>">
-                                            <div class="ellipsis">
-                                                <%= post.title %>
-                                            </div>
-                                        </a>
-                                    </td>
-                                    <td class="author">
-                                        <div class="ellipsis">
-                                            <%= post.author ? post.author.username : "" %>
-                                        </div>
-                                    </td>
-                                    <td class="date">
-                                        <span data-date="<%= post.createdAt %>">
-                                            <%= post.createdAt %>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <% }) %>
+                    <% } %>
+                    <% posts.forEach(function(post) { %>
+                        <tr>
+                            <td>
+                                <a href="/posts/<%= post._id %><%= getPostQueryString() %>">
+                                    <div class="ellipsis"><%= post.title %></div>
+                                </a>
+                            </td>
+                            <td class="author">
+                                <div class="ellipsis"><%= post.author ? post.author.username : "" %></div>
+                            </td>
+                            <td class="date">
+                                <span data-date="<%= post.createdAt %>"><%= post.createdAt %></span>
+                            </td>
+                        </tr>
+                    <% }) %>
                 </tbody>
             </table>
             <div class="row mb-3">
-
                 <div class="col-2">
                     <% if(isAuthenticated){ %>
                         <a class="btn btn-primary" href="/posts/new<%= getPostQueryString() %>">New</a>
-                        <% } %>
+                    <% } %>
                 </div>
 
                 <nav class="col-8">
-                    <% var offset=2; var previousBtnEnabled=currentPage> 1;
-                        var nextBtnEnabled = currentPage < maxPage; %>
-                            <ul class="pagination pagination-sm justify-content-center align-items-center h-100 mb-0">
-                                <li class="page-item <%= previousBtnEnabled?'':'disabled' %>">
-                                    <a class="page-link"
-                                        href="/posts<%= getPostQueryString(false, {page:currentPage-1}) %>"
-                                        <%=previousBtnEnabled?'':'tabindex=-1' %>>«
-                                    </a>
+                    <% 
+                        var offset = 2; 
+                        var previousBtnEnabled = currentPage > 1;
+                        var nextBtnEnabled = currentPage < maxPage;
+                    %>
+                    <ul class="pagination pagination-sm justify-content-center align-items-center h-100 mb-0">
+                        <li class="page-item <%= previousBtnEnabled?'':'disabled' %>">
+                            <!-- disabled : 버튼 사용불가 -->
+                            <a class="page-link" href="/posts<%= getPostQueryString(false, {page:currentPage-1}) %>"
+                                <%=previousBtnEnabled?'':'tabindex=-1' %>>«
+                                <!-- tabindex : 시각적인 포커싱 -->
+                            </a>
+                        </li>
+                        <% for(i = 1; i <= maxPage; i++ ){ %>
+                            <% if( i == 1 || i == maxPage || (i >= currentPage - offset && i <= currentPage + offset )){ %>
+                                <li class="page-item <%= currentPage==i?'active':'' %>">
+                                    <a class="page-link" href="/posts<%= getPostQueryString(false, {page:i}) %>"><%= i %></a>
                                 </li>
-                                <% for(i=1;i<=maxPage;i++){ %>
-                                    <% if(i==1 || i==maxPage || (i>=currentPage-offset && i<=currentPage+offset)){ %>
-                                            <li class="page-item <%= currentPage==i?'active':'' %>">
-                                                <a class="page-link"
-                                                    href="/posts<%= getPostQueryString(false, {page:i}) %>">
-                                                    <%= i %>
-                                                </a>
-                                            </li>
-                                            <% } else if(i==2 || i==maxPage-1){ %>
-                                                <li>
-                                                    <a class="page-link">...</a>
-                                                </li>
-                                                <% } %>
-                                                    <% } %>
-                                                        <li class="page-item <%= nextBtnEnabled?'':'disabled' %>">
-                                                            <a class="page-link"
-                                                                href="/posts<%= getPostQueryString(false, {page:currentPage+1}) %>"
-                                                                <%=nextBtnEnabled?'':'tabindex=-1' %>>»
-                                                            </a>
-                                                        </li>
-                                                        <!-- view에서는 res.locals의 항목들을 바로 사용할 수 있기때문에 res.locals.getPostQueryString가 아니라 getPostQueryString로 호출합니다. -->
-                            </ul>
+                            <% } else if( i == 2 || i == maxPage-1 ){ %>
+                                <li>
+                                    <a class="page-link">...</a>
+                                </li>
+                            <% } %>
+                        <% } %>
+                        <li class="page-item <%= nextBtnEnabled?'':'disabled' %>">
+                            <a class="page-link" href="/posts<%= getPostQueryString(false, {page:currentPage+1}) %>"
+                                <%=nextBtnEnabled?'':'tabindex=-1' %>>»
+                            </a>
+                        </li>
+                        <!-- view에서는 res.locals의 항목들을 바로 사용할 수 있기때문에 res.locals.getPostQueryString가 아니라 getPostQueryString로 호출합니다. -->
+                    </ul>
                 </nav>
             </div>
 
@@ -95,6 +91,7 @@
                         <label>Show</label>
                         <select name="limit" class="custom-select"
                             onchange="this.parentElement.parentElement.parentElement.submit()">
+                            <!-- TEST용 <option value="1" <%=limit==1?'selected':'' %> > 1 posts</option> -->
                             <option value="5" <%=limit==5?'selected':'' %> > 5 posts</option>
                             <option value="10" <%=limit==10?'selected':'' %> > 10 posts</option>
                             <option value="20" <%=limit==20?'selected':'' %> > 20 posts</option>
