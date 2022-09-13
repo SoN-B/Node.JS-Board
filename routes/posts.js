@@ -14,10 +14,12 @@ router.get("/", async (req, res) => {
     // isNaN() - 매개변수가 숫자인지 검사하는 함수 (숫자가 아니면 true)
     // NaN = Not a Number
 
+    var searchQuery = createSearchQuery(req.query);
+
     var skip = (page - 1) * limit;
-    var count = await Post.countDocuments({}); // {} -> 조건없음
+    var count = await Post.countDocuments(searchQuery); // {} -> 조건없음
     var maxPage = Math.ceil(count / limit);
-    var posts = await Post.find({})
+    var posts = await Post.find(searchQuery)
         .populate("author")
         .sort("-createdAt")
         // 나중에 생성된 data가 위로 오도록 정렬
@@ -32,6 +34,8 @@ router.get("/", async (req, res) => {
         currentPage: page,
         maxPage: maxPage,
         limit: limit,
+        searchType: req.query.searchType,
+        searchText: req.query.searchText,
     });
 });
 
@@ -52,7 +56,7 @@ router.post("/", util.isLoggedin, (req, res) => {
             req.flash("errors", util.parseError(err));
             return res.redirect("/posts/new" + res.locals.getPostQueryString());
         }
-        res.redirect("/posts" + res.locals.getPostQueryString(false, { page: 1 }));
+        res.redirect("/posts" + res.locals.getPostQueryString(false, { page: 1, searchText: "" }));
     });
 });
 // post의 routes에서 redirect가 있는 경우
@@ -134,6 +138,23 @@ function checkPermission(req, res, next) {
 
         next();
     });
+}
+
+function createSearchQuery(queries) {
+    var searchQuery = {};
+    if (queries.searchType && queries.searchText && queries.searchText.length >= 3) {
+        var searchTypes = queries.searchType.toLowerCase().split(",");
+        var postQueries = [];
+        if (searchTypes.indexOf("title") >= 0) {
+            postQueries.push({ title: { $regex: new RegExp(queries.searchText, "i") } });
+        }
+        if (searchTypes.indexOf("body") >= 0) {
+            postQueries.push({ body: { $regex: new RegExp(queries.searchText, "i") } });
+        }
+        if (postQueries.length > 0) searchQuery = { $or: postQueries };
+    }
+    console.log(searchQuery);
+    return searchQuery;
 }
 
 module.exports = router;
