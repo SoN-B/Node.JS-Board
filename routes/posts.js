@@ -146,6 +146,7 @@ function createSearchQuery(queries) {
         var searchTypes = queries.searchType.toLowerCase().split(",");
         var postQueries = [];
         if (searchTypes.indexOf("title") >= 0) {
+            // 인덱스의 번호가 음수가 아닌경우(즉 인덱스에 존재함)
             postQueries.push({ title: { $regex: new RegExp(queries.searchText, "i") } });
         }
         if (searchTypes.indexOf("body") >= 0) {
@@ -153,8 +154,16 @@ function createSearchQuery(queries) {
         }
         if (postQueries.length > 0) searchQuery = { $or: postQueries };
     }
-    console.log(searchQuery);
+    // Ex. searchQuery전달값 : { '$or': [ { title: [Object] }, { body: [Object] } ] }
     return searchQuery;
 }
+/* Mongoose Find Ex 
+    Number.find({name:/1/}), function(err,nums) {} -> 찾으려고하는 인수에 정규표현식이 들어감
+    따라서 RegExp생성자를 이용해서 정규식표현을 만들어야함
+*/
+/* 정규 표현식 용어 (정규식 : 표현식+Flag)
+    x+ : 반복을 표현하며, x문자가 한번 이상 반복됨
+    i(Flag) : 대/소문자를 식별하지 않는 것을 의미한다.
+*/
 
 module.exports = router;
