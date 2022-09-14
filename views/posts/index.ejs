@@ -104,6 +104,7 @@
                                 <option value="title,body" <%= searchType=='title,body'?'selected':'' %>>Title, Body</option>
                                 <option value="title" <%= searchType=='title'?'selected':'' %>>Title</option>
                                 <option value="body" <%= searchType=='body'?'selected':'' %>>Body</option>
+                                <!-- selected 속성은 페이지가 로드될 때 옵션 중에서 미리 선택되어지는 옵션 -->
                             </select>
                             <input minLength="3" type="text" name="searchText" value="<%= searchText %>">
                             <div class="input-group-append">
@@ -113,6 +114,8 @@
                     </div>
                 </div>
             </form>
+            <!-- select태그에서는 선택된 값들이 주소의 쿼리부분에 표시됨 -->
+            <!-- title, body가 주소에 표시될 때, ','는 %2C(인코딩값)로 보임 (공백 : %20 or +, " : %22, < : %3C, ...")-->
         </div>
 </body>
 
