@@ -2,6 +2,7 @@
 
 var express = require("express");
 var router = express.Router();
+var User = require("../models/User");
 var Post = require("../models/Post");
 var util = require("../util");
 
@@ -14,20 +15,29 @@ router.get("/", async (req, res) => {
     // isNaN() - 매개변수가 숫자인지 검사하는 함수 (숫자가 아니면 true)
     // NaN = Not a Number
 
-    var searchQuery = createSearchQuery(req.query);
-
     var skip = (page - 1) * limit;
-    var count = await Post.countDocuments(searchQuery); // {} -> 조건없음
-    var maxPage = Math.ceil(count / limit);
-    var posts = await Post.find(searchQuery)
-        .populate("author")
-        .sort("-createdAt")
-        // 나중에 생성된 data가 위로 오도록 정렬
-        // '-' -> 내림차순, createdAt -> 정렬할 항목명
-        // object를 넣는 경우 {createdAt:1} or {createdAt:-1}
-        .skip(skip)
-        .limit(limit)
-        .exec();
+    var maxPage = 0;
+    var searchQuery = await createSearchQuery(req.query);
+    /*
+    이 부분에서 쿼리에 !author or author가 존재할 시 DB에 쿼리를 두번 요청하게 된다 이를
+    한번에 처리하게 하려면 mongoose의 Aggregation Pipeline개념을 적용해보면 된다.
+    */
+    var posts = [];
+
+    if (searchQuery) {
+        // 작성자의 검색결과가 없다면 post를 검색할 필요가 없음
+        var count = await Post.countDocuments(searchQuery); // {} -> 조건없음
+        var maxPage = Math.ceil(count / limit);
+        var posts = await Post.find(searchQuery)
+            .populate("author")
+            .sort("-createdAt")
+            // 나중에 생성된 data가 위로 오도록 정렬
+            // '-' -> 내림차순, createdAt -> 정렬할 항목명
+            // object를 넣는 경우 {createdAt:1} or {createdAt:-1}
+            .skip(skip)
+            .limit(limit)
+            .exec();
+    }
 
     res.render("posts/index", {
         posts: posts,
@@ -140,7 +150,8 @@ function checkPermission(req, res, next) {
     });
 }
 
-function createSearchQuery(queries) {
+async function createSearchQuery(queries) {
+    // async : createSearchQuery함수 안에서 user모델을 검색하기 때문
     var searchQuery = {};
     if (queries.searchType && queries.searchText && queries.searchText.length >= 3) {
         var searchTypes = queries.searchType.toLowerCase().split(",");
@@ -152,7 +163,24 @@ function createSearchQuery(queries) {
         if (searchTypes.indexOf("body") >= 0) {
             postQueries.push({ body: { $regex: new RegExp(queries.searchText, "i") } });
         }
+        if (searchTypes.indexOf("author!") >= 0) {
+            // 작성자의 username이 정확히 일치하는경우
+            var user = await User.findOne({ username: queries.searchText }).exec();
+            // searchText가 username과 일치하는 user 한명을 찾아 검색 쿼리에 추가
+            if (user) postQueries.push({ author: user._id }); // id로 해당게시글의 작성자를 찾아 쿼리에 삽입
+        } else if (searchTypes.indexOf("author") >= 0) {
+            // 일부만 일치
+            var users = await User.find({ username: { $regex: new RegExp(queries.searchText, "i") } }).exec();
+            // 정규표현식으로 username의 일부분에 해당되는 user들을 검색해 users에 삽입
+            var userIds = [];
+            for (var user of users) {
+                // 해당 user들의 id들만 뽑아냄
+                userIds.push(user._id);
+            }
+            if (userIds.length > 0) postQueries.push({ author: { $in: userIds } }); // $in : 필드 값이 지정된 배열의 값과 동일한 문서를 선택
+        }
         if (postQueries.length > 0) searchQuery = { $or: postQueries };
+        else searchQuery = null; // (작성자 - 엄청중요함)의 검색결과가 없다면 post를 검색할 필요가 없음
     }
     // Ex. searchQuery전달값 : { '$or': [ { title: [Object] }, { body: [Object] } ] }
     return searchQuery;
