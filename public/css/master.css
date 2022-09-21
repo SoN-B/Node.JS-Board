@@ -42,5 +42,11 @@ body {
 }
 
 .highlighted {
-  background-color: yellow;
+  color: rgb(26, 190, 26);
+}
+/* !important : 나중에 설정한 값이 적용되지 않게 한다. */
+
+a {
+  color: rgb(0, 0, 0);
+  font-weight: bold;
 }
