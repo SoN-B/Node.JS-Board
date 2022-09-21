@@ -51,6 +51,8 @@ $(function () {
     var search = window.location.search; // ?searchType=title&searchText=text
     var params = {};
 
+    // query string -> object 변환 - IE에서 URLSearchParams사용불가
+    // Chrome, Safari : URLSearchParams(https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)참고
     if (search) {
         $.each(search.slice(1).split("&"), function (index, param) {
             // ?searchType=title&searchText=text -> searchType=title&searchText=text -> searchType=title, searchText=text
@@ -62,6 +64,7 @@ $(function () {
                 var value = param.slice(index + 1); // 10 ~
 
                 if (!params[key]) params[key] = value;
+                // params: {searchType: 'title', searchText: 'text'}
             }
         });
     }
@@ -88,6 +91,7 @@ $(function () {
                 $element.html($element.html().replace(regex, '<span class="highlighted">$1</span>'));
                 // $1 : 정규표현식에서의 () 안의 내용은 그룹화 되고, 그룹화된 내용의 첫번째 요소를 가져다 사용하는것
                 // 그리고 교체된 html 요소를 $element.html()안에 넣는것
+                // 결과는 검색한 제목 & 내용에 맞는 부분만 노란색 하이라이트가 적용됨
             }
         });
     }
