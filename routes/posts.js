@@ -4,6 +4,7 @@ var express = require("express");
 var router = express.Router();
 var User = require("../models/User");
 var Post = require("../models/Post");
+var Comment = require("../models/Comment");
 var util = require("../util");
 
 // Index
@@ -73,12 +74,22 @@ router.post("/", util.isLoggedin, (req, res) => {
 // res.locals.getPostQueryString함수를 사용하여 query string을 계속 유지
 
 // show
-router.get("/:id", (req, res) => {
-    Post.findOne({ _id: req.params.id })
-        .populate("author")
-        .exec(function (err, post) {
-            if (err) return res.json(err);
-            res.render("posts/show", { post: post });
+router.get("/:id", function (req, res) {
+    var commentForm = req.flash("commentForm")[0] || { _id: null, form: {} };
+    var commentError = req.flash("commentError")[0] || { _id: null, parentComment: null, errors: {} };
+
+    Promise.all([
+        // Promise.all : DB에서 두개 이상의 데이터를 가져와야 하는 경우
+        Post.findOne({ _id: req.params.id }).populate({ path: "author", select: "username" }),
+        Comment.find({ post: req.params.id }).sort("createdAt").populate({ path: "author", select: "username" }),
+    ])
+        .then(([post, comments]) => {
+            // 배열의 순서가 일치하도록
+            res.render("posts/show", { post: post, comments: comments, commentForm: commentForm, commentError: commentError });
+        })
+        .catch((err) => {
+            console.log("err: ", err);
+            return res.json(err);
         });
 });
 // Model.populate() : relationship이 형성되어 있는 항목의 값을 생성해 줍니다.

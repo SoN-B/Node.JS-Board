@@ -2,7 +2,7 @@
 
 body {
   font-family: 'Open Sans', sans-serif;
-}/* public/css/master.css */
+}
 
 .breadcrumb-item {
   font-size: 0.8em !important;
@@ -12,7 +12,7 @@ body {
   width: 100%;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* 1 */
+  text-overflow: ellipsis;
 }
 
 .board-table {
@@ -23,8 +23,9 @@ body {
   width: 100px;
 }
 
-.post-body{
-  white-space: pre-line; /* 2 */
+.post-body,
+.comment-body {
+  white-space: pre-line;
 }
 .post-info{
   font-size: 0.8em;
