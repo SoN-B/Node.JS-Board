@@ -46,13 +46,7 @@
                 </tbody>
             </table>
             <div class="row mb-3">
-                <div class="col-2">
-                    <% if(isAuthenticated){ %>
-                        <a class="btn btn-primary" href="/posts/new<%= getPostQueryString() %>">New</a>
-                    <% } %>
-                </div>
-
-                <nav class="col-8">
+                <nav class="col-11">
                     <% 
                         var offset = 2; 
                         var previousBtnEnabled = currentPage > 1;
@@ -85,6 +79,11 @@
                         <!-- view에서는 res.locals의 항목들을 바로 사용할 수 있기때문에 res.locals.getPostQueryString가 아니라 getPostQueryString로 호출합니다. -->
                     </ul>
                 </nav>
+                <div class="col-1">
+                    <% if(isAuthenticated){ %>
+                        <a class="btn btn-outline-secondary" href="/posts/new<%= getPostQueryString() %>">New</a>
+                    <% } %>
+                </div>
             </div>
 
             <form action="/posts" method="get" class="post-index-tool">
@@ -111,7 +110,7 @@
                             </select>
                             <input minLength="3" type="text" name="searchText" value="<%= searchText %>">
                             <div class="input-group-append">
-                                <button class="btn btn-outline-primary" type="submit">search</button>
+                                <button class="btn btn-outline-secondary" type="submit">search</button>
                             </div>
                         </div>
                     </div>
