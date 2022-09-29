@@ -1,0 +1,39 @@
+<%/*
+    actionUrl
+    comment
+    commentForm
+    commentError
+*/%>
+<!-- actionUrl : 이 form은 comment의 수정과 생성 모두에 사용될 수 있기 때문에 각각의 용도에 따라 알맞은 action url이 전달 -->
+<!-- comment : 댓글의 수정의 경우 원 댓글의 정보가 전달됩니다. -->
+<!-- commentForm : 에러가 있는 경우 commentForm flash의 정보가 전달됩니다. -->
+<!-- commentError : 에러가 있는 경우 commentError flash의 정보가 전달됩니다. -->
+
+<form action="<%= actionUrl %><%= getPostQueryString(true) %>" method="post">
+    <fieldset <%= !isAuthenticated?'disabled':'' %>>
+        <div class="row">
+            <div class="col-8">
+                <textarea name="text" rows="2" class="form-control <%= (commentError._id == comment._id && commentError.errors.text)?'is-invalid':'' %>"><%= (commentForm._id == comment._id)?commentForm.form.text:comment.text %></textarea>
+            </div>
+            <div class="col-4">
+                <% if(comment._id){ %>
+                    <!-- comment에 id가 있다라는것은 업데이트라는것 -->
+                    <button type="submit" class="btn btn-primary h-100 mr-2 pl-4 pr-4">Edit</button>
+                    <a href="javascript:void(0)" onclick="$('#comment-<%= comment._id %>').removeClass('comment-edit-enabled')">Cancel</a>
+                <% } else { %>
+                    <button type="submit" class="btn btn-primary h-100 mr-2">Add Comment</button>
+                <% } %>
+            </div>
+        </div>
+        <% if(commentError._id == comment._id && commentError.errors.text){ %>
+            <span class="invalid-feedback d-block"><%= commentError.errors.text.message %></span>
+        <% } %>
+    </fieldset>
+</form>
+
+<!-- 
+    각각의 form은 다른 comment를 가지지만, 모두 같은 commentForm, commentError를 전달받습니다. 
+    comment._id은 댓글 생성의 경우 _id의 값이 없고, 댓글 수정의 경우 _id에 현재 댓글의 id가 들어있습니다. 
+    마찬가지로 commentForm._id, commentError._id도 댓글 생성의 경우 id의 값이 없고, 댓글 수정의 경우 _id에 현재 댓글의 id가 들어있습니다. 
+    그러므로 commentForm._id, commentError._id를 comment._id과 값을 비교하면 어느 form에 해당 데이터를 사용해야 하는지를 알 수 있습니다. 
+-->
