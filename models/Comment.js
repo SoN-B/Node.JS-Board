@@ -1,5 +1,3 @@
-// models/Comment.js
-
 var mongoose = require("mongoose");
 
 // schema
