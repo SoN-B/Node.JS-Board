@@ -68,3 +68,9 @@ a {
 .comment-edit-enabled .comment-edit {
   display:inherit;
 }
+/* 기본화면
+comment-edit-enabled comment show X
+comment-edit-enabled comment edit O
+
+comment show O
+comment edit X */

@@ -67,15 +67,15 @@
                             <div class="col-3 col-md-2 col-lg-1 pl-4"><%= comment.author.username %></div>
                             <div id="comment-<%= comment._id %>" class="col-9 col-md-10 col-lg-11 <%= (commentError._id == comment._id)?'comment-edit-enabled':'' %>">
                             <!-- commentError._id는 에러를 가진 id를 값을 가지므로 해당 댓글의 comment-edit-enabled class를 활성화하여 페이지 로딩 후에 댓글 수정 form이 바로 보이도록 -->
-                            <div class="comment-show">
-                                <div class="comment-text mb-3"><%= comment.text %></div>
-                                <small class="d-block">
-                                    (Created: <span data-date-time="<%= comment.createdAt %>"></span>
-                                    <% if(comment.updatedAt){ %>
-                                        | Updated: <span data-date-time="<%= comment.updatedAt %>"></span>
-                                    <% } %>)
-                                </small>
-                                <% if(isAuthenticated && comment.author && currentUser.id == comment.author.id){ %>
+                                <div class="comment-show">
+                                    <div class="comment-text mb-3"><%= comment.text %></div>
+                                    <small class="d-block">
+                                        (Created: <span data-date-time="<%= comment.createdAt %>"></span>
+                                        <% if(comment.updatedAt){ %>
+                                            | Updated: <span data-date-time="<%= comment.updatedAt %>"></span>
+                                        <% } %>)
+                                    </small>
+                                    <% if(isAuthenticated && comment.author && currentUser.id == comment.author.id){ %>
                                     <small class="d-block">
                                         <a href="javascript:void(0)" 
                                             onclick="$('.comment-reply-enabled').removeClass('comment-reply-enabled'); 
@@ -88,8 +88,8 @@
                                             <a href="javascript:void(0)" onclick="confirm('Do you want to delete this?')?this.parentElement.submit():null;">Delete</a>
                                         </form>
                                     </small>
-                                <% } %>
-                            </div>
+                                    <% } %>
+                                </div>
                                 <div class="comment-edit">
                                     <!-- edit form은 partial로 분리 -->
                                     <%- include('../partials/comment-form', {
