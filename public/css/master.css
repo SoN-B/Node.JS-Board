@@ -7,7 +7,8 @@ body {
 .breadcrumb-item {
   font-size: 0.8em !important;
 }
-.ellipsis{
+
+.ellipsis {
   display: block;
   width: 100%;
   white-space: nowrap;
@@ -18,16 +19,30 @@ body {
 .board-table {
   table-layout: fixed;
 }
+
+.board-table .numId,
+.board-table .views {
+  width: 60px;
+  text-align: center;
+}
+
 .board-table .author,
 .board-table .date {
   width: 100px;
+  text-align: center;
+}
+
+.board-table .title-container:hover .title-comments,
+.board-table .title-container:hover .title-text {
+  text-decoration: underline;
 }
 
 .post-body,
 .comment-body {
   white-space: pre-line;
 }
-.post-info{
+
+.post-info {
   font-size: 0.8em;
 }
 
@@ -38,13 +53,15 @@ body {
 .post-index-tool {
   max-width: 450px;
 }
-.post-index-tool input[type='text']{
+
+.post-index-tool input[type='text'] {
   max-width: 130px;
 }
 
 .highlighted {
   color: rgb(26, 190, 26);
 }
+
 /* !important : 나중에 설정한 값이 적용되지 않게 한다. */
 
 a {
@@ -55,6 +72,7 @@ a {
 .page-link {
   color: #6c757d;
 }
+
 .page-item.active .page-link {
   background-color: #6c757d;
   border-color: #6c757d;
@@ -62,12 +80,13 @@ a {
 
 .comment-edit,
 .comment-edit-enabled .comment-show {
-  display:none;
+  display: none;
 }
 
 .comment-edit-enabled .comment-edit {
-  display:inherit;
+  display: inherit;
 }
+
 /* 기본화면
 comment-edit-enabled comment show X
 comment-edit-enabled comment edit O

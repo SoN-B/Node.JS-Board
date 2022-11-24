@@ -29,16 +29,56 @@ router.get("/", async (req, res) => {
         // 작성자의 검색결과가 없다면 post를 검색할 필요가 없음
         var count = await Post.countDocuments(searchQuery); // {} -> 조건없음
         var maxPage = Math.ceil(count / limit);
-        var posts = await Post.find(searchQuery)
-            .populate("author")
-            .sort("-createdAt")
-            // 나중에 생성된 data가 위로 오도록 정렬
-            // '-' -> 내림차순, createdAt -> 정렬할 항목명
-            // object를 넣는 경우 {createdAt:1} or {createdAt:-1}
-            .skip(skip)
-            .limit(limit)
-            .exec();
+        var posts = await Post.aggregate([
+        { $match: searchQuery }, // &match = 모델.find함수
+        { $lookup: { // &lookup = SQL의 join과 같이 현재 collection에 다른 collection을 이어주는 역할
+            from: 'users', // 연결할 다른 collection의 이름을 적습니다
+            localField: 'author', // 현재 collection에 존재하는 컬럼을 적습니다
+            foreignField: '_id', // 다른 collection에 존재하는 컬럼을 적습니다.
+            as: 'author' 
+            // 다른 collection을 담을 컬럼의 이름을 적습니다. 이 항목의 이름으로 다른 collection의 데이터가 배열로 생성
+            // 기존의 post.author의 값은 지워집니다.
+        } },
+        { $unwind: '$author' }, // &unwind = 배열을 flat하게 풀어주는 역할
+        // '$author'처럼 문자열이 '$'로 시작되면 해당 값은 document의 항목이름임을 나타냅니다.
+        /*
+        (unwind 전)
+        [
+            { _id:1, name:'john', classes:['math', 'history', 'art'] }
+        ]
+
+        (unwind 후)
+        [
+            { _id:1, name:"john", classes:"math" }, 
+            { _id:1, name:"john", classes:"history" }, 
+            { _id:1, name:"john", classes:"art" }
+        ]
+        */
+        { $sort : { createdAt: -1 } },
+        // 모델.sort함수와 동일한 역할을 합니다. 다만 '-createdAt'과 같은 형태는 사용할 수 없고, { createdAt: -1 }의 형태로 사용해야 합니다
+        { $skip: skip },
+        { $limit: limit },
+        { $lookup: { // 원래 populate로 가져올 수 없었던 댓글들을 가져옴
+            // 하나의 post에 여러개의 comments가 생길 수 있으므로 이번에는 $unwind를 사용하지 않습니다.
+            from: 'comments',
+            localField: '_id',
+            foreignField: 'post',
+            as: 'comments'
+        } },
+        { $project: { // 데이터를 원하는 형태로 가공하기 위해 사용됩니다.
+            title: 1, // 이때 1은 보여주기를 원하는 항목
+            author: {
+                username: 1,
+            },
+            views: 1,
+            numId: 1,
+            createdAt: 1,
+            commentCount: { $size: '$comments'}
+        } },
+        ]).exec();
     }
+    // collection_이름.aggregate([ query_오브젝트1, query_오브젝트2, query_오브젝트3...  ])
+    // query_오브젝트로 하나의 명령어가 전달됩니다. 위 처럼 여러개의 명령어를 배열로 전달하여 데이터를 조작하고 가공할 수 있습니다. 
 
     res.render("posts/index", {
         posts: posts,
@@ -85,6 +125,8 @@ router.get("/:id", function (req, res) {
     ])
         .then(([post, comments]) => {
             // 배열의 순서가 일치하도록
+            post.views++;
+            post.save();
             res.render("posts/show", { post: post, comments: comments, commentForm: commentForm, commentError: commentError });
         })
         .catch((err) => {

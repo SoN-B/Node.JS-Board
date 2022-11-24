@@ -14,7 +14,9 @@
                 <!-- <td> 태그는 표의 열-세로(col)을 나타내며, <tr> 태그 하위에 위치합니다. -->
                 <thead class="thead-light">
                     <tr>
+                        <th scope="col" class="numId">#</th>
                         <th scope="col">Title</th>
+                        <th scope="col" class="views">Views</th>
                         <th scope="col" class="author">Author</th>
                         <th scope="col" class="date">Date</th>
                     </tr>
@@ -22,17 +24,25 @@
                 <tbody>
                     <% if(posts==null || posts.length==0){ %>
                         <tr> 
-                            <td colspan=2> There is no data to show :( </td>
+                            <td colspan=5> There is no data to show :( </td>
                             <!-- colspan 속성은 해당 데이터 셀(data cell)이 확장될 열(column)의 개수를 명시 -->
                         </tr>
                     <% } %>
                     <% posts.forEach(function(post) { %>
                         <tr>
+                            <td class="numId"><%= post.numId %></td>
                             <td>
-                                <a href="/posts/<%= post._id %><%= getPostQueryString() %>">
-                                    <div data-search-highlight="title" class="ellipsis"><%= post.title %></div>
+                                <!-- ellipsis(텍스트가 너무 길 경우 해당 범위 밖의 텍스트를 '...'로 표시하는 것)를 구현하기 위해 title-text, title-comments등의 CSS class들이 추가 -->
+                                <a href="/posts/<%= post._id %><%= getPostQueryString() %>" class="title-container">
+                                    <div data-search-highlight="title" class="title-ellipsis ellipsis float-left">
+                                        <span class="title-text"><%= post.title %></span>
+                                    </div>
+                                    <% if(post.commentCount){ %>
+                                        <small class="title-comments d-inline-block pl-2">(<%= post.commentCount %>)</small>
+                                    <% } %>
                                 </a>
                             </td>
+                            <td class="views"><%= post.views %></td>
                             <td class="author">
                                 <a href="/posts<%= getPostQueryString(false, { searchType:'author!', searchText:post.author.username }) %>">
                                     <div data-search-highlight="author" class="ellipsis"><%= post.author ? post.author.username : "" %></div>
